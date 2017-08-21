@@ -1,0 +1,7 @@
+How to Build an LFS System
+- The LFS system will be built using an already built Linux system.
+- Chapter 2 of the book describes how to create a new Linux native partition and file system.
+- Chapter 3 describes which packages and patches need to be downloaded.
+- Chapter 4 discusses how to setup a working environment.
+- Chapter 5 explains how to install a basic development suite (toolchain).
+- Chapter 6 explains how to build the full system suite.

@@ -1,0 +1,2 @@
+Beginner's Guide to Installing from Source: http://moi.vonos.net/linux/beginners-installing-from-source/
+Software Building HOW-TO: http://www.tldp.org/HOWTO/Software-Building-HOWTO.html

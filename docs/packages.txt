@@ -1,0 +1,67 @@
+Acl - access control list package for fine-grained access control on files and directories.
+Attr - package for administering extended attributes on filesystem objects.
+Autoconf - package for producing shell scripts that automatically configure source code from a developer template.
+Automake - package for producing Make files from a template.
+Bash - Bourne shell interface to the operating system.
+Bc - arbitrary precision numeric processing language. Used when building the Linux kernel.
+Binutils - provides a linke, assembler, and other tools for handling object files.
+Bison - contains the GNU version of yacc (Yet another compiler compiler).
+Bzip2 - contains programs for compressing and decompressing files.
+Check - provides a test harness for other programs. It is only used with the temporary toolchain.
+Coreutils - provides a number of essential programs for viewing and manipulating files and directories.
+DejaGNU - framework for testing other programs. It is only used with the temporary toolchain.
+Diffutils - contains programs that show the difference between files and directories.
+E2fsprogs - utilities for handling ext2, ext3, and ext4 filesystems.
+Eudev - device manager package.
+Expat - contains a relatively small XML parsing library.
+Expect - testing program used to carry out scripted dialogues with other programs. Only used with the temporary toolchain.
+File - used to determine file types.
+Finutils - provides programs to find files in a filesystem.
+Flex - program that is used for generating programs that recognize patterns in text. It is the GNU version of lex.
+Gawk - GNU version of awk.
+Gcc - GNU Compiler Collection.
+GDBM - GNU Database Manager Library
+Gettext - contains utilities that are used for the internationalization and localization of other packages.
+Glibc - The main GNU C library.
+GMP - Math library that is used for arbitrary precision arithmetic.
+Gperf - generates a hash function from a key set. Used by Eudev.
+Grep - program used for searching for text within a file.
+Groff - used to process text. Used by man pages.
+GRUB - the Grand Unified Boot Loader.
+Gzip - program for compressing and decompressing files.
+Iana-etc - provides data for network services and protocols.
+Inetutils - programs for basic network administration.
+Intltool - used to extract translatable strings from source files.
+IProute2 - basic and advanced IPv4 and IPv6 utilities.
+Kbd - contains key-table files, keyboard utilities for non-US keyboards, and a number of console fonts.
+Kmod - progams used to administer Linux kernel modules.
+Less - text viewer.
+Libcap - user-space interface for POSIX 1003.1e capabilities in the Linux kernel.
+Libpipeline - contains libraries for manipulating pipelines of subprocesses.
+Libtool - The generic GNU support script. A wrapper around the complexities of using shared libraries.
+Linux Kernel - The Linux Kernel.
+M4 - general text macro processor.
+Make - program used for directing the building of packages.
+Man-DB - program used for finding and viewing man pages.
+Man-pages - The basic set of Linux documentation.
+MPC - Library for complex number arithmetic.
+MPFR - Library for multiple precision arithmetic.
+Ncurses - Libraries for handling terminal characters on screen.
+Patch - Used to apply patches to programs.
+Perl - A PERL language interpreter.
+Pkg-config - program used to return meta-data about an installed library or package.
+Procps-NG - programs used to monitor processes.
+Psmisc - used for displaying information about running processes.
+Readline - set of libraries that offers command-line editing and history capabilities.
+Sed - the sed streaming editor.
+Shadow - handle passwords in a secure fashion.
+Sysklogd - used for logging messages, such as those given by the kernel or daemon processes when unusual events occur.
+Sysvinit - The init program.
+Tar - The Tap archiving utility.
+Tcl - Tool Command Language. Used in test suites and only installed with the temporary toolchain.
+Texinfo - used for manipulating info files.
+Util-linux - various utility programs.
+Vim - The vim editor.
+XML::Parser - Perl module used with Expat.
+XZ Utils - utilities for compressing and decompressing files.
+Zlib - library containing functions for compressing and decompressing files.
