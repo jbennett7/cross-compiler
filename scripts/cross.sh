@@ -1,108 +1,83 @@
-#!/bin/bash
-
-BASE="$(pwd)"
-TARGET='arm-linux-gnueabihf'
-PATH=${PATH}:${PREFIX}/bin
-PREFIX="${BASE}/target"
-SOURCES="${BASE}/sources"
-BUILD="${BASE}/build"
-
-[ -d "${SOURCES}" ] || mkdir -p ${SOURCES}
-[ -d "${PREFIX}"  ] || mkdir -p ${PREFIX}
-[ -d "${BUILD}"   ] || mkdir -p ${BUILD}
-
+# From: http://preshing.com/20141119/how-to-build-a-gcc-cross-compiler/
 function FAIL {
   echo "${1}"
   exit 1
 }
 
-function download_sources {
-    pushd ${SOURCES}
-    for p in $(cat ${BASE}/wget-list);do
-        wget ${p}
-    done
-    popd
-}
+BASE=$(pwd)
+SOURCES=${BASE}/sources
+[ ! -d ${SOURCES} ] && mkdir -p ${SOURCES}
+TARGET=${BASE}/target
+[ ! -d ${TARGET} ] && mkdir -p ${TARGET}
+BUILD=${BASE}/build
+[ ! -d ${BUILD} ] && mkdir -p ${BUILD}
 
-function build_binutils {
-    pushd ${BUILD}
-    [ -d ${BUILD}/binutils* ] || tar xvf ${SOURCES}/binutils*.tar.bz2
-    [ -d ${BUILD}/build-binutils ] || mkdir ${BUILD}/build-binutils
-    pushd ${BUILD}/build-binutils
-    ../binutils*/configure --target=${TARGET} --prefix=${PREFIX} &&
-    make -j4 all 2> make.error.log &&
-    make install || FAIL "FAILED"
-    popd
-}
+# This shows how to build a cross-compiler for AArch64 processors.
+BUILD_TARGET='aarch64-linux'
 
-# If building on mac OS, this part of the build will throw the following error:
-#  ../../gcc-6.3.0/gcc/config/arm/thumb1.md:1615:10873: fatal error: bracket nesting level exceeded maximum of 256.
-# SOLUTION:  https://answers.launchpad.net/gcc-arm-embedded/+question/262850
-#
-# I've searched online, it seems this problem is caused by the clang in OS X. As the clang is not yet fully tested to 
-# build this toolchain, I'd suggest you to use gcc instead of clang to build this toolchain. The possible way is:
-#    Use Homebrew ( http://brew.sh/ ) to install a gcc.
-#    Check the system will use real gcc instaed of clang ( you can use " gcc -v " to check ).
-#    Then build the toolchain.
-#
-function build_gcc_1 {
-    pushd ${BUILD}
-    [ -d ${BUILD}/gcc* ] || tar xvf ${SOURCES}/gcc*.tar.bz2
-    [ -d ${BUILD}/build-gcc ] || mkdir ${BUILD}/build-gcc
-    pushd ${BUILD}/build-gcc
-    ../gcc*/configure --target=${TARGET} --prefix=${PREFIX} --without-headers --with-newlib --with-gnu-as --with-gnu-ld &&
-    make -j4 all-gcc 2> make.error.log &&
-    make install-gcc || FAIL "FAILED" 
-    popd
-}
+cd ${SOURCES}
+# wget-list
+wget http://ftpmirror.gnu.org/binutils/binutils-2.24.tar.gz
+wget http://ftpmirror.gnu.org/gcc/gcc-4.9.2/gcc-4.9.2.tar.gz
+wget https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.17.2.tar.xz
+wget http://ftpmirror.gnu.org/glibc/glibc-2.20.tar.xz
+wget http://ftpmirror.gnu.org/mpfr/mpfr-3.1.2.tar.xz
+wget http://ftpmirror.gnu.org/gmp/gmp-6.0.0a.tar.xz
+wget http://ftpmirror.gnu.org/mpc/mpc-1.0.2.tar.gz
+wget ftp://gcc.gnu.org/pub/gcc/infrastructure/isl-0.12.2.tar.bz2
+wget ftp://gcc.gnu.org/pub/gcc/infrastructure/cloog-0.18.1.tar.gz
 
-function build_newlib {
-    [ -d ${BUILD}/newlib* ] || tar xvf ${SOURCES}/newlib*.tar.gz
-    [ -d ${BUILD}/build-newlib ] || mkdir build-newlib
-    pushd ${BUILD}/build-newlib
-    ../newlib*/configure --target=${TARGET} --prefix=${PREFIX} &&
-    make -j4 all 2> make.error.log &&
-    make install || FAIL "FAILED"
-    popd
-}
+# Extract to a sources files to BUILD.
+cd ${BUILD}
+tar xvf ${SOURCES}/*.tar*
 
-function build_gcc_2 {
-    pushd ${BUILD}/build-gcc
-    ../gcc*/configure --target=${TARGET} --prefix=${PREFIX} --with-newlib --with-gnu-as --with-gnu-ld --disable-shared --disable-libssp &&
-    make -j4 all 2> make.error.log &&
-    make install || FAIL "FAILED"
-    popd
-}
+# Setup the GCC directory.
+cd gcc-4.9.2
+for p in mpfr gmp mpc isl cloog;do
+    ln -s ../${p}-* ${p}
+done
 
-function build_gdb {
-    [ -d ${BUILD}/gdb* ] || tar xvf ${SOURCES}/gdb*.tar.xz
-    [ -d ${BUILD}/build-gdb ] || mkdir ${BUILD}/build-gdb
-    pushd ${BUILD}/build-gdb
-    ../gdb*/configure --target=${TARGET} --prefix=${PREFIX} &&
-    make -j4 all 2> make.error.log &&
-    make install || FAIL "FAILED"
-    popd
-}
+# Set up a path
+PATH=${TARGET}/bin:${PATH}
 
-case "${1}" in
-    download_sources)
-        download_sources;;
-    build_binutils)
-        build_binutils;;
-    build_gcc_1)
-        build_gcc_1;;
-    build_newlib)
-        build_newlib;;
-    build_gcc_2)
-        build_gcc_2;;
-    build_gdb)
-        build_gdb;;
-    build_all)
-        build_binutils
-        build_gcc_1
-        build_newlib
-        build_gcc_2
-        build_gdb;;
-    *)
-        grep "function" ${0};;
-esac
+mkdir ${BUILD}/build-binutils
+cd ${BUILD}/build-binutils
+../binutils-2.24/configure \
+    --prefix=${TARGET} \
+    --target=${BUILD_TARGET} \
+    --disable-multilib
+make -j4 2> make.error.log &&
+make install || FAIL "binutils build failed."
+
+cd ${BUILD}/linux-3.17.2
+make ARCH=arm64 INSTALL_HDR_PATH=${TARGET}/aarch64-linux headers_install
+
+mkdir -p ${BUILD}/build-gcc
+cd ${BUILD}/build-gcc
+../gcc-4.9.2/configure \
+    --prefix=${TARGET} \
+    --target=${BUILD_TARGET} \
+    --enable-languages=c,c++ \
+    --disable-multilib
+make -j4 all-gcc &&
+make install-gcc || FAIL "gcc build failed."
+
+mkdir -p ${BUILD}/build-glibc
+cd ${BUILD}/build-glibc
+../glibc-2.20/configure \
+    --prefix=${TARGET} \
+    --target=${BUILD_TARGET} \
+    --build=${MACHTYPE} \
+    --host=aarch-linux \
+    --with-headers=${TARGET}/aarch64-linux/include \
+    --disable-multilib \
+    libc_cv_forced_unwind=yes
+make install-bootstrap-headers=yes install-headers &&
+make -j4 csu/subdir_lib &&
+install csu/crrl.o csu/crti.o csu/crtn.o ${TARGET}/aarch64-linux/lib &&
+aarch64-linux-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o ${TARGET}/aarch64-linux/lib/libc.so &&
+touch ${TARGET}/aarch64-linux/include/gnu/stubs.h || FAIL "Building glibc library failed."
+
+cd ${BUILD}/build-gcc
+make -j4 &&
+make install || FAIL "Rebuilding gcc after building glibc failed."
