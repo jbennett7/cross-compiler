@@ -4,7 +4,7 @@ function FAIL {
   exit 1
 }
 
-BASE=$(pwd)
+BASE=`pwd`
 SOURCES=${BASE}/sources
 [ ! -d ${SOURCES} ] && mkdir -p ${SOURCES}
 TARGET=${BASE}/target
@@ -32,7 +32,7 @@ cd ${BUILD}
 tar xvf ${SOURCES}/*.tar*
 
 # Setup the GCC directory.
-cd gcc-4.9.2
+cd ${BUILD}/gcc-4.9.2
 for p in mpfr gmp mpc isl cloog;do
     ln -s ../${p}-* ${p}
 done
@@ -59,7 +59,7 @@ cd ${BUILD}/build-gcc
     --target=${BUILD_TARGET} \
     --enable-languages=c,c++ \
     --disable-multilib
-make -j4 all-gcc &&
+make -j4 all-gcc 2> make.error.log &&
 make install-gcc || FAIL "gcc build failed."
 
 mkdir -p ${BUILD}/build-glibc
@@ -72,12 +72,13 @@ cd ${BUILD}/build-glibc
     --with-headers=${TARGET}/aarch64-linux/include \
     --disable-multilib \
     libc_cv_forced_unwind=yes
-make install-bootstrap-headers=yes install-headers &&
-make -j4 csu/subdir_lib &&
+make install-bootstrap-headers=yes install-headers 2> make.error.log && 
+echo "FIRST MAKE PASSED" >> make.error.log &&
+make -j4 csu/subdir_lib 2>> make.error.log &&
 install csu/crrl.o csu/crti.o csu/crtn.o ${TARGET}/aarch64-linux/lib &&
 aarch64-linux-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o ${TARGET}/aarch64-linux/lib/libc.so &&
 touch ${TARGET}/aarch64-linux/include/gnu/stubs.h || FAIL "Building glibc library failed."
 
 cd ${BUILD}/build-gcc
-make -j4 &&
+make -j4 2> make.error.log &&
 make install || FAIL "Rebuilding gcc after building glibc failed."
