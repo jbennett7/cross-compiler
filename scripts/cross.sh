@@ -12,32 +12,38 @@ TARGET=${BASE}/target
 BUILD=${BASE}/build
 [ ! -d ${BUILD} ] && mkdir -p ${BUILD}
 
-# This shows how to build a cross-compiler for AArch64 processors.
 BUILD_TARGET='aarch64-linux'
 
 cd ${SOURCES}
-# wget-list
-wget http://ftpmirror.gnu.org/binutils/binutils-2.24.tar.gz
-wget http://ftpmirror.gnu.org/gcc/gcc-4.9.2/gcc-4.9.2.tar.gz
-wget https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.17.2.tar.xz
-wget http://ftpmirror.gnu.org/glibc/glibc-2.20.tar.xz
-wget http://ftpmirror.gnu.org/mpfr/mpfr-3.1.2.tar.xz
-wget http://ftpmirror.gnu.org/gmp/gmp-6.0.0a.tar.xz
-wget http://ftpmirror.gnu.org/mpc/mpc-1.0.2.tar.gz
-wget ftp://gcc.gnu.org/pub/gcc/infrastructure/isl-0.12.2.tar.bz2
-wget ftp://gcc.gnu.org/pub/gcc/infrastructure/cloog-0.18.1.tar.gz
+PACKAGE_LIST='
+http://ftpmirror.gnu.org/binutils/binutils-2.24.tar.gz
+http://ftpmirror.gnu.org/gcc/gcc-4.9.2/gcc-4.9.2.tar.gz
+https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.17.2.tar.xz
+http://ftpmirror.gnu.org/glibc/glibc-2.20.tar.xz
+http://ftpmirror.gnu.org/mpfr/mpfr-3.1.2.tar.xz
+http://ftpmirror.gnu.org/gmp/gmp-6.0.0a.tar.xz
+http://ftpmirror.gnu.org/mpc/mpc-1.0.2.tar.gz
+ftp://gcc.gnu.org/pub/gcc/infrastructure/isl-0.12.2.tar.bz2
+ftp://gcc.gnu.org/pub/gcc/infrastructure/cloog-0.18.1.tar.gz
+'
 
-# Extract to a sources files to BUILD.
+for p in ${PACKAGE_LIST};do
+    [ -f $(basename ${p}) ] || wget ${p}
+done
+
 cd ${BUILD}
-tar xvf ${SOURCES}/*.tar*
+for p in $(ls ${SOURCES} | sed -e 's/\.tar..*$//'); do
+    if [ "${p}" = "gmp-6.0.0a" ];then
+        p="gmp-6.0.0"
+    fi
+    [ -d ${p} ] || tar xvf ${SOURCES}/${p}
+done
 
-# Setup the GCC directory.
 cd ${BUILD}/gcc-4.9.2
 for p in mpfr gmp mpc isl cloog;do
     ln -s ../${p}-* ${p}
 done
-
-# Set up a path
+ 
 PATH=${TARGET}/bin:${PATH}
 
 mkdir ${BUILD}/build-binutils
